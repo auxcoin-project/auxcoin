@@ -1,23 +1,25 @@
-package main
+package proof
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/auxcoin-project/auxcoin/blockchain"
 )
 
 func TestProof(t *testing.T) {
 	t.Parallel()
 
 	t.Run("hash block", func(t *testing.T) {
-		b := &Block{
+		b := &blockchain.Block{
 			Timestamp: 1580601600,
 			Bits:      8,
 			PrevHash:  []byte("prevHash"),
 			Data:      []byte("data"),
 		}
 
-		err := (Proof{}).HashBlock(b)
+		err := Hash(b)
 		require.NoError(t, err)
 		require.Equal(t, uint32(75), b.Nonce)
 		require.Equal(t, []byte{0x0, 0x9d, 0xca, 0x10, 0xfa, 0x35, 0x64,
@@ -30,7 +32,7 @@ func TestProof(t *testing.T) {
 		t.Parallel()
 
 		t.Run("pass", func(t *testing.T) {
-			b := &Block{
+			b := &blockchain.Block{
 				Timestamp: 1580601600,
 				Bits:      8,
 				Nonce:     75,
@@ -38,11 +40,11 @@ func TestProof(t *testing.T) {
 				PrevHash:  []byte("prevHash"),
 				Data:      []byte("data"),
 			}
-			require.True(t, (Proof{}).VerifyBlock(b))
+			require.True(t, Verify(b))
 		})
 
 		t.Run("fail", func(t *testing.T) {
-			b := &Block{
+			b := &blockchain.Block{
 				Timestamp: 1580601600,
 				Bits:      8,
 				Nonce:     1,
@@ -50,7 +52,7 @@ func TestProof(t *testing.T) {
 				PrevHash:  []byte("prevHash"),
 				Data:      []byte("data"),
 			}
-			require.False(t, (Proof{}).VerifyBlock(b))
+			require.False(t, Verify(b))
 		})
 	})
 }

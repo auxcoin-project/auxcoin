@@ -1,4 +1,4 @@
-package main
+package blockchain
 
 import (
 	"os"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func openTestDB(t *testing.T, path string) (*bolt.DB, func()) {
+func openDB(t *testing.T, path string) (*bolt.DB, func()) {
 	db, err := bolt.Open(path, 0600, &bolt.Options{
 		Timeout: 1 * time.Second,
 	})
@@ -22,31 +22,31 @@ func openTestDB(t *testing.T, path string) (*bolt.DB, func()) {
 }
 
 func TestBlockChain(t *testing.T) {
-	db, cleanup := openTestDB(t, "test-blockchain.db")
+	db, cleanup := openDB(t, "test-blockchain.db")
 	defer cleanup()
 
-	bc := NewBlockChain(db)
+	c := NewChain(db)
 
 	// add blocks
 	b1 := NewBlock(time.Now().Unix(), 42, []byte("data1"))
 	b1.Hash = []byte("hash1")
-	err := bc.AddBlock(b1)
+	err := c.Add(b1)
 	require.NoError(t, err)
 
 	b2 := NewBlock(time.Now().Unix(), 42, []byte("data2"))
 	b2.Hash = []byte("hash2")
 	b2.PrevHash = b1.Hash
-	err = bc.AddBlock(b2)
+	err = c.Add(b2)
 	require.NoError(t, err)
 
 	b3 := NewBlock(time.Now().Unix(), 42, []byte("data3"))
 	b3.Hash = []byte("hash3")
 	b3.PrevHash = b2.Hash
-	err = bc.AddBlock(b3)
+	err = c.Add(b3)
 	require.NoError(t, err)
 
 	// iterate
-	iter := bc.Iterator()
+	iter := c.Iterator()
 
 	b, err := iter.Next()
 	require.NoError(t, err)

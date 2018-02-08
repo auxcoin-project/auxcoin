@@ -1,4 +1,4 @@
-package main
+package blockchain
 
 import (
 	"log"
@@ -14,19 +14,19 @@ var (
 )
 
 type (
-	BlockChain struct {
+	Chain struct {
 		DB   *bolt.DB
 		Head []byte
 	}
 
-	BlockChainIterator struct {
+	ChainIterator struct {
 		DB      *bolt.DB
 		Current []byte
 	}
 )
 
-func NewBlockChain(db *bolt.DB) *BlockChain {
-	bc := &BlockChain{DB: db}
+func NewChain(db *bolt.DB) *Chain {
+	c := &Chain{DB: db}
 
 	// ensure buckets exist
 	db.Update(func(tx *bolt.Tx) error {
@@ -37,20 +37,20 @@ func NewBlockChain(db *bolt.DB) *BlockChain {
 	})
 
 	db.View(func(tx *bolt.Tx) error {
-		bc.Head = tx.Bucket(blockBucket).Get(headKey)
+		c.Head = tx.Bucket(blockBucket).Get(headKey)
 		return nil
 	})
 
-	return bc
+	return c
 }
 
-func (bc *BlockChain) AddBlock(b *Block) error {
+func (c *Chain) Add(b *Block) error {
 	encoded, err := b.Encode()
 	if err != nil {
 		return err
 	}
 
-	err = bc.DB.Update(func(tx *bolt.Tx) error {
+	err = c.DB.Update(func(tx *bolt.Tx) error {
 		if err := tx.Bucket(blockBucket).Put(b.Hash, encoded); err != nil {
 			return errors.Wrap(err, "failed to persist block")
 		}
@@ -63,19 +63,19 @@ func (bc *BlockChain) AddBlock(b *Block) error {
 		return err
 	}
 
-	bc.Head = b.Hash
+	c.Head = b.Hash
 
 	return nil
 }
 
-func (bc *BlockChain) Iterator() *BlockChainIterator {
-	return &BlockChainIterator{bc.DB, bc.Head}
+func (c *Chain) Iterator() *ChainIterator {
+	return &ChainIterator{c.DB, c.Head}
 }
 
-func (bci *BlockChainIterator) Next() (*Block, error) {
+func (ci *ChainIterator) Next() (*Block, error) {
 	var encoded []byte
-	bci.DB.View(func(tx *bolt.Tx) error {
-		encoded = tx.Bucket([]byte(blockBucket)).Get(bci.Current)
+	ci.DB.View(func(tx *bolt.Tx) error {
+		encoded = tx.Bucket([]byte(blockBucket)).Get(ci.Current)
 		return nil
 	})
 	if encoded == nil {
@@ -87,7 +87,7 @@ func (bci *BlockChainIterator) Next() (*Block, error) {
 		return nil, err
 	}
 
-	bci.Current = b.PrevHash
+	ci.Current = b.PrevHash
 
 	return b, nil
 }

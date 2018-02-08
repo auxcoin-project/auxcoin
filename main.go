@@ -9,6 +9,9 @@ import (
 
 	bolt "github.com/coreos/bbolt"
 	"github.com/jawher/mow.cli"
+
+	"github.com/auxcoin-project/auxcoin/blockchain"
+	"github.com/auxcoin-project/auxcoin/proof"
 )
 
 func main() {
@@ -35,13 +38,13 @@ func add(cmd *cli.Cmd) {
 	data := cmd.StringArg("DATA", "", "data to add to chain")
 	cmd.Action = func() {
 		db := openDB()
-		bc := NewBlockChain(db)
+		bc := blockchain.NewChain(db)
 
-		b := NewBlock(time.Now().Unix(), 8, []byte(*data))
+		b := blockchain.NewBlock(time.Now().Unix(), 8, []byte(*data))
 
 		b.PrevHash = bc.Head
-		(Proof{}).HashBlock(b)
-		bc.AddBlock(b)
+		proof.Hash(b)
+		bc.Add(b)
 
 		db.Close()
 	}
@@ -50,7 +53,7 @@ func add(cmd *cli.Cmd) {
 func view(cmd *cli.Cmd) {
 	cmd.Action = func() {
 		db := openDB()
-		bc := NewBlockChain(db)
+		bc := blockchain.NewChain(db)
 
 		iter := bc.Iterator()
 

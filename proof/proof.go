@@ -1,15 +1,15 @@
-package main
+package proof
 
 import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"math/big"
+
+	"github.com/auxcoin-project/auxcoin/blockchain"
 )
 
-type Proof struct{}
-
-func (p Proof) prepare(b *Block) []byte {
+func prepare(b *blockchain.Block) []byte {
 	var bx []byte
 	buf := bytes.NewBuffer(bx)
 
@@ -22,26 +22,26 @@ func (p Proof) prepare(b *Block) []byte {
 	return buf.Bytes()
 }
 
-func (p Proof) bitsToTarget(bits uint32) *big.Int {
+func bitsToTarget(bits uint32) *big.Int {
 	target := big.NewInt(1)
 	return target.Lsh(target, uint(256-bits))
 }
 
-func (p Proof) verify(hash []byte, target *big.Int) bool {
+func verify(hash []byte, target *big.Int) bool {
 	var i big.Int
 	i.SetBytes(hash)
 	return i.Cmp(target) == -1
 }
 
-func (p Proof) HashBlock(b *Block) error {
+func Hash(b *blockchain.Block) error {
 	b.Nonce = 0
-	target := p.bitsToTarget(b.Bits)
+	target := bitsToTarget(b.Bits)
 
 	for {
-		data := p.prepare(b)
+		data := prepare(b)
 		hash := sha256.Sum256(data)
 		b.Hash = hash[:]
-		if p.verify(b.Hash, target) {
+		if verify(b.Hash, target) {
 			break
 		}
 		b.Nonce++
@@ -50,10 +50,10 @@ func (p Proof) HashBlock(b *Block) error {
 	return nil
 }
 
-func (p Proof) VerifyBlock(b *Block) bool {
-	data := p.prepare(b)
+func Verify(b *blockchain.Block) bool {
+	data := prepare(b)
 	hash := sha256.Sum256(data)
-	target := p.bitsToTarget(b.Bits)
+	target := bitsToTarget(b.Bits)
 
-	return p.verify(hash[:], target)
+	return verify(hash[:], target)
 }
