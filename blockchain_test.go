@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func openDB(t *testing.T, path string) (*bolt.DB, func()) {
+func openTestDB(t *testing.T, path string) (*bolt.DB, func()) {
 	db, err := bolt.Open(path, 0600, &bolt.Options{
 		Timeout: 1 * time.Second,
 	})
@@ -22,7 +22,7 @@ func openDB(t *testing.T, path string) (*bolt.DB, func()) {
 }
 
 func TestBlockChain(t *testing.T) {
-	db, cleanup := openDB(t, "test-blockchain.db")
+	db, cleanup := openTestDB(t, "test-blockchain.db")
 	defer cleanup()
 
 	bc := NewBlockChain(db)
