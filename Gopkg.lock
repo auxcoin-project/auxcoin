@@ -14,6 +14,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/jawher/mow.cli"
+  packages = ["."]
+  revision = "0e80ee9f63156ea1954dc2375c33a1c7e752c25c"
+  version = "v1.0.3"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -43,6 +49,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "00fb42a7f3c95ad4303606e441bae4304b3b7ea3edd65b55163321c8d246e008"
+  inputs-digest = "9508983fba91679ab20bfe5de5faf3dcda552e94d32723d49996b917747ae26f"
   solver-name = "gps-cdcl"
   solver-version = 1
