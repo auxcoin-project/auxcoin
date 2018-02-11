@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -21,46 +22,40 @@ func openTestDB(t *testing.T, path string) (*bolt.DB, func()) {
 	}
 }
 
-func TestChain(t *testing.T) {
-	db, cleanup := openTestDB(t, "blockchain-test.db")
-	defer cleanup()
-
+func newTestChain(t *testing.T, db *bolt.DB) *Chain {
 	bc := NewChain(db)
 
-	// add blocks
-	b1 := NewBlock(time.Now().Unix(), 42, []byte("data1"))
-	b1.Hash = []byte("hash1")
-	err := bc.Add(b1)
-	require.NoError(t, err)
+	var p Proof
+	for i := 0; i < 3; i++ {
+		b := newTestBlock()
+		b.PrevHash = bc.Head
+		b.Data = []byte(fmt.Sprintf("data-%v", i))
+		p.Hash(b)
 
-	b2 := NewBlock(time.Now().Unix(), 42, []byte("data2"))
-	b2.Hash = []byte("hash2")
-	b2.PrevHash = b1.Hash
-	err = bc.Add(b2)
-	require.NoError(t, err)
+		err := bc.Add(b)
+		require.NoError(t, err)
+	}
 
-	b3 := NewBlock(time.Now().Unix(), 42, []byte("data3"))
-	b3.Hash = []byte("hash3")
-	b3.PrevHash = b2.Hash
-	err = bc.Add(b3)
-	require.NoError(t, err)
+	return bc
+}
 
-	// iterate
-	iter := bc.Iterator()
+func TestChain(t *testing.T) {
+	t.Parallel()
 
-	b, err := iter.Next()
-	require.NoError(t, err)
-	require.Equal(t, b3, b)
+	t.Run("iterate", func(t *testing.T) {
+		db, cleanup := openTestDB(t, "blockchain-test.db")
+		defer cleanup()
 
-	b, err = iter.Next()
-	require.NoError(t, err)
-	require.Equal(t, b2, b)
+		bc := newTestChain(t, db)
+		iter := bc.Iterator()
 
-	b, err = iter.Next()
-	require.NoError(t, err)
-	require.Equal(t, b1, b)
-
-	b, err = iter.Next()
-	require.NoError(t, err)
-	require.Nil(t, b)
+		for i := 2; i >= 0; i-- {
+			b, err := iter.Next()
+			require.NoError(t, err)
+			require.Equal(t, []byte(fmt.Sprintf("data-%v", i)), b.Data)
+		}
+		b, err := iter.Next()
+		require.NoError(t, err)
+		require.Empty(t, b)
+	})
 }

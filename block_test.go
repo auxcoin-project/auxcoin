@@ -2,33 +2,26 @@ package main
 
 import (
 	"testing"
-	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func newTestBlock() *Block {
+	return NewBlock(1580601600, 8, []byte("data"))
+}
 
 func TestBlock(t *testing.T) {
 	t.Parallel()
 
-	t.Run("new block", func(t *testing.T) {
-		expected := &Block{
-			Time: time.Now().Unix(),
-			Bits: 42,
-			Data: []byte("data"),
-		}
-		actual := NewBlock(expected.Time, expected.Bits, expected.Data)
-		assert.Equal(t, expected, actual)
-	})
-
 	t.Run("encoding", func(t *testing.T) {
-		block := NewBlock(time.Now().Unix(), 42, []byte("data"))
+		block := newTestBlock()
 
 		encoded, err := block.Encode()
-		assert.NoError(t, err)
-		assert.NotEmpty(t, encoded)
+		require.NoError(t, err)
+		require.NotEmpty(t, encoded)
 
 		decoded, err := DecodeBlock(encoded)
-		assert.NoError(t, err)
-		assert.Equal(t, block, decoded)
+		require.NoError(t, err)
+		require.Equal(t, block, decoded)
 	})
 }
