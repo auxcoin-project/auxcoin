@@ -16,7 +16,9 @@ func (p Proof) prepare(b *Block) []byte {
 	binary.Write(buf, binary.LittleEndian, b.Time)
 	binary.Write(buf, binary.LittleEndian, b.Bits)
 	buf.Write(b.PrevHash)
-	buf.Write(b.Data)
+	for _, txn := range b.Txns {
+		buf.Write(txn.Bytes())
+	}
 	binary.Write(buf, binary.LittleEndian, b.Nonce)
 
 	return buf.Bytes()

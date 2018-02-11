@@ -7,6 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func newTestCoinbaseTransaction() *Transaction {
+	txn := NewTransaction()
+	txn.TxnOut = append(txn.TxnOut, NewTxnOut(reward, "ADDRESS_1"))
+	return txn
+}
+
 func newTestTransaction() *Transaction {
 	txn := NewTransaction()
 	hash, _ := hex.DecodeString("0cce18c0fb799350e7f7e1cfda8994255cbd75513dd8cdbf4b33cfb8dafc702d")

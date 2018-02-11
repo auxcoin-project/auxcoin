@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -29,7 +28,10 @@ func newTestChain(t *testing.T, db *bolt.DB) *Chain {
 	for i := 0; i < 3; i++ {
 		b := newTestBlock()
 		b.PrevHash = bc.Head
-		b.Data = []byte(fmt.Sprintf("data-%v", i))
+		b.Txns = []*Transaction{
+			newTestCoinbaseTransaction(),
+			newTestTransaction(),
+		}
 		p.Hash(b)
 
 		err := bc.Add(b)
@@ -52,7 +54,7 @@ func TestChain(t *testing.T) {
 		for i := 2; i >= 0; i-- {
 			b, err := iter.Next()
 			require.NoError(t, err)
-			require.Equal(t, []byte(fmt.Sprintf("data-%v", i)), b.Data)
+			require.NotEmpty(t, b)
 		}
 		b, err := iter.Next()
 		require.NoError(t, err)

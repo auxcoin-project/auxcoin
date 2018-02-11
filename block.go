@@ -14,15 +14,15 @@ type (
 		Nonce    uint32
 		Hash     []byte
 		PrevHash []byte
-		Data     []byte
+		Txns     []*Transaction
 	}
 )
 
-func NewBlock(tstamp int64, bits uint32, data []byte) *Block {
+func NewBlock(tstamp int64, bits uint32, txns []*Transaction) *Block {
 	return &Block{
 		Time: tstamp,
 		Bits: bits,
-		Data: data,
+		Txns: txns,
 	}
 }
 

@@ -31,7 +31,7 @@ func NewTransaction() *Transaction {
 	return &Transaction{}
 }
 
-func (txn *Transaction) Hash() {
+func (txn Transaction) Bytes() []byte {
 	var b []byte
 	buf := bytes.NewBuffer(b)
 
@@ -46,7 +46,11 @@ func (txn *Transaction) Hash() {
 		buf.Write([]byte(out.Script))
 	}
 
-	hash := sha256.Sum256(buf.Bytes())
+	return buf.Bytes()
+}
+
+func (txn *Transaction) Hash() {
+	hash := sha256.Sum256(txn.Bytes())
 	txn.ID = hash[:]
 }
 

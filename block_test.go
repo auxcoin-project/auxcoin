@@ -7,7 +7,10 @@ import (
 )
 
 func newTestBlock() *Block {
-	return NewBlock(1580601600, 8, []byte("data"))
+	return NewBlock(1580601600, 8, []*Transaction{
+		newTestCoinbaseTransaction(),
+		newTestTransaction(),
+	})
 }
 
 func TestBlock(t *testing.T) {
