@@ -8,6 +8,8 @@ It is generated from these files:
 	auxcoin.proto
 
 It has these top-level messages:
+	AddBlockRequest
+	AddBlockResponse
 */
 package pb
 
@@ -31,6 +33,43 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+type AddBlockRequest struct {
+	Block string `protobuf:"bytes,1,opt,name=Block" json:"Block,omitempty"`
+}
+
+func (m *AddBlockRequest) Reset()                    { *m = AddBlockRequest{} }
+func (m *AddBlockRequest) String() string            { return proto.CompactTextString(m) }
+func (*AddBlockRequest) ProtoMessage()               {}
+func (*AddBlockRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+func (m *AddBlockRequest) GetBlock() string {
+	if m != nil {
+		return m.Block
+	}
+	return ""
+}
+
+type AddBlockResponse struct {
+	Error string `protobuf:"bytes,1,opt,name=Error" json:"Error,omitempty"`
+}
+
+func (m *AddBlockResponse) Reset()                    { *m = AddBlockResponse{} }
+func (m *AddBlockResponse) String() string            { return proto.CompactTextString(m) }
+func (*AddBlockResponse) ProtoMessage()               {}
+func (*AddBlockResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+func (m *AddBlockResponse) GetError() string {
+	if m != nil {
+		return m.Error
+	}
+	return ""
+}
+
+func init() {
+	proto.RegisterType((*AddBlockRequest)(nil), "pb.AddBlockRequest")
+	proto.RegisterType((*AddBlockResponse)(nil), "pb.AddBlockResponse")
+}
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
@@ -42,6 +81,7 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Auxcoin service
 
 type AuxcoinClient interface {
+	AddBlock(ctx context.Context, in *AddBlockRequest, opts ...grpc.CallOption) (*AddBlockResponse, error)
 }
 
 type auxcoinClient struct {
@@ -52,29 +92,67 @@ func NewAuxcoinClient(cc *grpc.ClientConn) AuxcoinClient {
 	return &auxcoinClient{cc}
 }
 
+func (c *auxcoinClient) AddBlock(ctx context.Context, in *AddBlockRequest, opts ...grpc.CallOption) (*AddBlockResponse, error) {
+	out := new(AddBlockResponse)
+	err := grpc.Invoke(ctx, "/pb.Auxcoin/AddBlock", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Auxcoin service
 
 type AuxcoinServer interface {
+	AddBlock(context.Context, *AddBlockRequest) (*AddBlockResponse, error)
 }
 
 func RegisterAuxcoinServer(s *grpc.Server, srv AuxcoinServer) {
 	s.RegisterService(&_Auxcoin_serviceDesc, srv)
 }
 
+func _Auxcoin_AddBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuxcoinServer).AddBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Auxcoin/AddBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuxcoinServer).AddBlock(ctx, req.(*AddBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Auxcoin_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.Auxcoin",
 	HandlerType: (*AuxcoinServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "auxcoin.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AddBlock",
+			Handler:    _Auxcoin_AddBlock_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "auxcoin.proto",
 }
 
 func init() { proto.RegisterFile("auxcoin.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 55 bytes of a gzipped FileDescriptorProto
+	// 134 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4d, 0x2c, 0xad, 0x48,
-	0xce, 0xcf, 0xcc, 0xd3, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x32, 0xe2, 0xe4,
-	0x62, 0x77, 0x84, 0x08, 0x26, 0xb1, 0x81, 0x45, 0x8d, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0xcb,
-	0x05, 0x6d, 0x0d, 0x26, 0x00, 0x00, 0x00,
+	0xce, 0xcf, 0xcc, 0xd3, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0x52, 0xe7,
+	0xe2, 0x77, 0x4c, 0x49, 0x71, 0xca, 0xc9, 0x4f, 0xce, 0x0e, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e,
+	0x11, 0x12, 0xe1, 0x62, 0x05, 0xf3, 0x25, 0x18, 0x15, 0x18, 0x35, 0x38, 0x83, 0x20, 0x1c, 0x25,
+	0x0d, 0x2e, 0x01, 0x84, 0xc2, 0xe2, 0x82, 0xfc, 0xbc, 0xe2, 0x54, 0x90, 0x4a, 0xd7, 0xa2, 0xa2,
+	0xfc, 0x22, 0x98, 0x4a, 0x30, 0xc7, 0xc8, 0x89, 0x8b, 0xdd, 0x11, 0x62, 0x8f, 0x90, 0x39, 0x17,
+	0x07, 0x4c, 0x93, 0x90, 0xb0, 0x5e, 0x41, 0x92, 0x1e, 0x9a, 0x5d, 0x52, 0x22, 0xa8, 0x82, 0x10,
+	0x73, 0x95, 0x18, 0x92, 0xd8, 0xc0, 0x2e, 0x34, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0x62, 0xe4,
+	0x29, 0x10, 0xb2, 0x00, 0x00, 0x00,
 }

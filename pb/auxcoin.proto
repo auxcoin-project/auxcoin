@@ -3,4 +3,13 @@ syntax = "proto3";
 package pb;
 
 service Auxcoin {
+    rpc AddBlock(AddBlockRequest) returns (AddBlockResponse) {}
+}
+
+message AddBlockRequest {
+    string Block = 1;
+}
+
+message AddBlockResponse {
+    string Error = 1;
 }
