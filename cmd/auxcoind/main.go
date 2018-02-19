@@ -49,7 +49,7 @@ func action(cfg config) func() {
 		}
 
 		gsrv := grpc.NewServer()
-		auxd := New(auxbc.NewChain(db), 8, 25)
+		auxd := newAuxcoind(auxbc.NewChain(db), 8, 25)
 
 		auxpb.RegisterAuxcoinServer(gsrv, auxd)
 
