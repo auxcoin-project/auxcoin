@@ -2,24 +2,23 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"log"
 	"os"
 	"time"
 
-	auxbc "github.com/auxcoin-project/auxcoin/blockchain"
-	auxpb "github.com/auxcoin-project/auxcoin/pb"
 	"github.com/jawher/mow.cli"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+
+	auxbc "github.com/auxcoin-project/auxcoin/blockchain"
+	auxpb "github.com/auxcoin-project/auxcoin/pb"
 )
 
 type config struct {
 	srvAddr  *string
 	coinAddr *string
 }
-
-const reward = 25
-const bits = 16
 
 func main() {
 	app := cli.App("auxminer", "auxcoin miner")
@@ -47,11 +46,21 @@ func newClient(cfg config) auxpb.AuxcoinClient {
 
 func action(cfg config) func() {
 	return func() {
+		c := newClient(cfg)
 		for {
-			var txns []*auxbc.Transaction
-			txns = append(txns, coinbaseTxn(reward, *cfg.coinAddr))
+			status, err := c.Status(context.Background(), &auxpb.StatusRequest{})
+			if err != nil {
+				panic(errors.Wrap(err, "failed to fetch status"))
+			}
 
-			b := auxbc.NewBlock(time.Now().Unix(), bits, txns)
+			var txns []*auxbc.Transaction
+			txns = append(txns, coinbaseTxn(status.Reward, *cfg.coinAddr))
+
+			b := auxbc.NewBlock(time.Now().Unix(), status.Bits, txns)
+			b.PrevHash, err = hex.DecodeString(status.Head)
+			if err != nil {
+				panic(errors.Wrap(err, "failed to decode head"))
+			}
 
 			var p auxbc.Proof
 			if err := p.Hash(b); err != nil {
@@ -65,19 +74,13 @@ func action(cfg config) func() {
 				continue
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-
-			c := newClient(cfg)
-			resp, err := c.AddBlock(ctx, &auxpb.AddBlockRequest{string(enc)})
+			resp, err := c.AddBlock(context.Background(), &auxpb.AddBlockRequest{string(enc)})
 			if err != nil {
 				log.Println(errors.Wrap(err, "failed to add block"))
 			}
 			if resp.Error != "" {
 				log.Println(resp.Error)
-			} else {
-				log.Print(".")
 			}
-			cancel()
 		}
 	}
 }
