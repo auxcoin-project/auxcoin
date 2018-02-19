@@ -6,16 +6,18 @@ import (
 	"os"
 	"time"
 
-	auxbc "github.com/auxcoin-project/auxcoin/blockchain"
-	auxpb "github.com/auxcoin-project/auxcoin/pb"
 	bolt "github.com/coreos/bbolt"
 	"github.com/jawher/mow.cli"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+
+	auxbc "github.com/auxcoin-project/auxcoin/blockchain"
+	auxpb "github.com/auxcoin-project/auxcoin/pb"
 )
 
 type config struct {
-	port *string
+	port   *string
+	dbPath *string
 }
 
 func main() {
@@ -27,6 +29,11 @@ func main() {
 			Value: ":9999",
 			Desc:  "listen port",
 		}),
+		dbPath: app.String(cli.StringOpt{
+			Name:  "d db",
+			Value: "blockchain.db",
+			Desc:  "path to database",
+		}),
 	})
 
 	app.Run(os.Args)
@@ -34,7 +41,7 @@ func main() {
 
 func action(cfg config) func() {
 	return func() {
-		db, err := bolt.Open("blockchain.db", 0600, &bolt.Options{
+		db, err := bolt.Open(*cfg.dbPath, 0600, &bolt.Options{
 			Timeout: 1 * time.Second,
 		})
 		if err != nil {
@@ -42,7 +49,7 @@ func action(cfg config) func() {
 		}
 
 		gsrv := grpc.NewServer()
-		auxd := New(auxbc.NewChain(db))
+		auxd := New(auxbc.NewChain(db), 8, 25)
 
 		auxpb.RegisterAuxcoinServer(gsrv, auxd)
 

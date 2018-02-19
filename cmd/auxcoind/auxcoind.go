@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 
 	auxbc "github.com/auxcoin-project/auxcoin/blockchain"
 	auxpb "github.com/auxcoin-project/auxcoin/pb"
@@ -9,11 +10,21 @@ import (
 )
 
 type auxcoind struct {
-	bc *auxbc.Chain
+	chain  *auxbc.Chain
+	bits   uint32
+	reward uint32
 }
 
-func New(bc *auxbc.Chain) *auxcoind {
-	return &auxcoind{bc}
+func New(chain *auxbc.Chain, bits uint32, reward uint32) *auxcoind {
+	return &auxcoind{chain, bits, reward}
+}
+
+func (a *auxcoind) Status(ctx context.Context, req *auxpb.StatusRequest) (*auxpb.StatusResponse, error) {
+	return &auxpb.StatusResponse{
+		Head:   hex.EncodeToString(a.chain.Head),
+		Bits:   a.bits,
+		Reward: a.reward,
+	}, nil
 }
 
 func (a *auxcoind) AddBlock(ctx context.Context, req *auxpb.AddBlockRequest) (*auxpb.AddBlockResponse, error) {
@@ -23,7 +34,7 @@ func (a *auxcoind) AddBlock(ctx context.Context, req *auxpb.AddBlockRequest) (*a
 		return &auxpb.AddBlockResponse{err.Error()}, err
 	}
 
-	if err := a.bc.Add(b); err != nil {
+	if err := a.chain.Add(b); err != nil {
 		err = errors.Wrap(err, "failed to add block")
 		return &auxpb.AddBlockResponse{err.Error()}, err
 	}

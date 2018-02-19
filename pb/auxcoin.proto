@@ -3,13 +3,23 @@ syntax = "proto3";
 package pb;
 
 service Auxcoin {
+    rpc Status(StatusRequest) returns (StatusResponse) {}
     rpc AddBlock(AddBlockRequest) returns (AddBlockResponse) {}
 }
 
+message StatusRequest {
+}
+
+message StatusResponse {
+    string head = 1;
+    uint32 bits = 2;
+    uint32 reward = 3;
+}
+
 message AddBlockRequest {
-    string Block = 1;
+    string block = 1;
 }
 
 message AddBlockResponse {
-    string Error = 1;
+    string error = 1;
 }
